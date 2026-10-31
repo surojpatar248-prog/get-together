@@ -32,6 +32,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Set up Android SDK
+      with:
+        accept-android-sdk-licenses: true
         uses: android-actions/setup-android@v3
       - name: Install web dependencies
         working-directory: client
