@@ -1,0 +1,58 @@
+name: Build Get Together Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: "Public HTTPS URL of the Get Together backend (e.g. https://your-api.example.com)"
+        required: true
+        type: string
+  push:
+    branches: [ main, master ]
+    paths:
+      - "client/**"
+      - ".github/workflows/build-android-apk.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install web dependencies
+        working-directory: client
+        run: npm install
+      - name: Build web app
+        working-directory: client
+        env:
+          VITE_SERVER_URL: ${{ github.event.inputs.server_url || vars.VITE_SERVER_URL || 'https://your-backend-url.example' }}
+        run: npm run build
+      - name: Add Android platform and sync
+        working-directory: client
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: client/android
+        run: ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: get-together-debug-apk
+          path: client/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
