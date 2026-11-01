@@ -240,7 +240,20 @@ export default function App() {
         </div>
       </section>
       <aside className="side-column">
-        <section className="panel people-panel"><div className="panel-heading"><h3>In the room</h3><span className="count">{room.participants.length}</span></div><div className="people-list">{room.participants.map((p,i)=><div className="person" key={p.id}><div className={'avatar avatar-'+(i%5)}>{(p.name||'?').slice(0,1).toUpperCase()}</div><div className="person-name">{p.name}<small>{p.id===room.hostId?'Host':'Participant'}</small></div><span className="dot"></span></div>)}</div><button className="invite-btn" onClick={()=>navigator.clipboard?.writeText(`${location.origin}?room=${room.code}`)}>＋ Copy invite link</button></section>
+        <section className="panel people-panel"><div className="panel-heading"><h3>In the room</h3><span className="count">{room.participants.length}</span></div><div className="people-list">{room.participants.map((p,i)=><div className="person" key={p.id}><div className={'avatar avatar-'+(i%5)}>{(p.name||'?').slice(0,1).toUpperCase()}</div><div className="person-name">{p.name}<small>{p.id===room.hostId?'Host':'Participant'}</small></div><span className="dot"></span></div>)}</div><button
+  className="invite-btn"
+  onClick={async () => {
+    const inviteText = `Join my Get Together room! Room Code: ${room.code}`;
+    try {
+      await navigator.clipboard.writeText(inviteText);
+      setNotice(`Room code ${room.code} copied!`);
+    } catch {
+      setNotice(`Room Code: ${room.code}`);
+    }
+  }}
+>
+  ＋ Copy room code
+</button></section>
         <section className="panel chat-panel"><div className="panel-heading"><h3>Room chat</h3><span>✧</span></div><div className="chat-messages">{messages.map(m=><div className="chat-message" key={m.id}><b>{m.name}</b><p>{m.text}</p></div>)}{messages.length===0&&<p className="muted">Say hi to your people 👋</p>}</div><form className="chat-form" onSubmit={sendChat}><input value={chatText} onChange={e=>setChatText(e.target.value)} placeholder="Send a message…" maxLength={500}/><button aria-label="Send message">➤</button></form></section>
       </aside>
     </div>
